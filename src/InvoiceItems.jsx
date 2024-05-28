@@ -1,6 +1,21 @@
-import { Box, Button, Flex, FormLabel, Input, Spacer } from "@chakra-ui/react";
-import React, { useState } from "react";
+import {
+  Box,
+  Button,
+  Flex,
+  FormControl,
+  FormLabel,
+  Input,
+  VStack,
+  HStack,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+} from "@chakra-ui/react";
+import { useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
+import NavBarComponent from "./NavBarComponent";
 
 const TOKEN =
   "pat9lbLhivluaYxIN.965db3fcbbbcf1e5958b1833c2c40004fe7711a6158ed9e80e8df58d3600d76d";
@@ -26,6 +41,11 @@ function InvoiceItems() {
       ...items,
       { itemName: "", description: "", quantity: 1, price: 0 },
     ]);
+  };
+
+  const removeItem = (index) => {
+    const newItems = items.filter((_, i) => i !== index);
+    setItems(newItems);
   };
 
   const saveInvoice = async () => {
@@ -60,58 +80,81 @@ function InvoiceItems() {
       setError(`Failed to save items: ${error.message}`);
     }
   };
-  function handleGoBack() {
-    return history.goBack();
-  }
+
   return (
     <div>
-      <Flex>
-        <Box>
-          <h1>Add items</h1>
-        </Box>
-        <Spacer />
-        <Button colorScheme="blue" onClick={handleGoBack}>
-          Back
-        </Button>
-      </Flex>
+      <NavBarComponent
+        title="Add Items"
+        buttonText="Save Invoice"
+        buttonFunction={saveInvoice}
+        buttonColor="green"
+      />
+      <Box p="4">
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        <VStack spacing={4}>
+          {items.map((item, index) => (
+            <HStack key={index} spacing={4} width="100%">
+              <FormControl id={`itemName-${index}`}>
+                <FormLabel>Item Name</FormLabel>
+                <Input
+                  type="text"
+                  name="itemName"
+                  placeholder="Item Name"
+                  value={item.itemName}
+                  onChange={(e) => handleItemChange(index, e)}
+                />
+              </FormControl>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <div>
-        {items.map((item, index) => (
-          <div key={index}>
-            <input
-              type="text"
-              name="itemName"
-              placeholder="Item Name"
-              value={item.itemName}
-              onChange={(e) => handleItemChange(index, e)}
-            />
-            <input
-              type="text"
-              name="description"
-              placeholder="Description"
-              value={item.description}
-              onChange={(e) => handleItemChange(index, e)}
-            />
-            <input
-              type="number"
-              name="quantity"
-              placeholder="Quantity"
-              value={item.quantity}
-              onChange={(e) => handleItemChange(index, e)}
-            />
-            <input
-              type="number"
-              name="price"
-              placeholder="Price"
-              value={item.price}
-              onChange={(e) => handleItemChange(index, e)}
-            />
-          </div>
-        ))}
-        <button onClick={addItem}>Add Item</button>
-        <button onClick={saveInvoice}>Save Invoice</button>
-      </div>
+              <FormControl id={`description-${index}`}>
+                <FormLabel>Description</FormLabel>
+                <Input
+                  type="text"
+                  name="description"
+                  placeholder="Description"
+                  value={item.description}
+                  onChange={(e) => handleItemChange(index, e)}
+                />
+              </FormControl>
+
+              <FormControl id={`quantity-${index}`}>
+                <FormLabel>Quantity</FormLabel>
+                <NumberInput min={0}>
+                  <NumberInputField
+                    type="number"
+                    name="quantity"
+                    placeholder="Quantity"
+                    value={item.quantity}
+                    onChange={(e) => handleItemChange(index, e)}
+                  />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              </FormControl>
+
+              <FormControl id={`price-${index}`}>
+                <FormLabel>Price</FormLabel>
+                <Input
+                  type="number"
+                  name="price"
+                  placeholder="Price"
+                  value={item.price}
+                  onChange={(e) => handleItemChange(index, e)}
+                />
+              </FormControl>
+              <FormControl pt="8" id="remove-item">
+                <Button onClick={() => removeItem(index)}>Remove Item</Button>
+              </FormControl>
+            </HStack>
+          ))}
+        </VStack>
+        <Flex mt="4" justify="center">
+          <Button colorScheme="blue" onClick={addItem} mr="4">
+            Add Item
+          </Button>
+        </Flex>
+      </Box>
     </div>
   );
 }

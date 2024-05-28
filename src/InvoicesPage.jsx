@@ -11,6 +11,7 @@ import {
   TableCaption,
   TableContainer,
 } from "@chakra-ui/react";
+import NavBarComponent from "./NavBarComponent";
 
 function InvoicesPage() {
   const [invoices, setInvoices] = useState([]);
@@ -34,6 +35,7 @@ function InvoicesPage() {
         client: data.fields["Client"],
         project: data.fields["Project"],
         amount: data.fields["Amount Rollup (from items)"],
+        created: data.fields["Created"],
       }));
       setInvoices(invoicesData);
     }
@@ -46,17 +48,11 @@ function InvoicesPage() {
 
   return (
     <>
-      <Flex as="header" width="100%" p="4" bg="gray.100" align="center">
-        <Box>
-          <h1>Invoices</h1>
-        </Box>
-        <Spacer />
-        <Box>
-          <Button colorScheme="blue" onClick={handleCreateNewInvoice}>
-            New Invoice
-          </Button>
-        </Box>
-      </Flex>
+      <NavBarComponent
+        title="Invoices"
+        buttonText="Create New Invoice"
+        buttonFunction={handleCreateNewInvoice}
+      />
       <TableContainer>
         <Table variant="simple">
           <TableCaption>List of Invoices</TableCaption>
@@ -66,6 +62,7 @@ function InvoicesPage() {
               <Th isNumeric>Amount</Th>
               <Th>Client</Th>
               <Th>Project</Th>
+              <Th>Created</Th>
             </Tr>
           </Thead>
           <Tbody>
@@ -75,6 +72,7 @@ function InvoicesPage() {
                 <Td isNumeric>SGD {invoice.amount}</Td>
                 <Td>{invoice.client}</Td>
                 <Td>{invoice.project}</Td>
+                <Td>{invoice.created}</Td>
               </Tr>
             ))}
           </Tbody>

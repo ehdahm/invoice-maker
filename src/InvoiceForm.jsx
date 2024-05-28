@@ -7,8 +7,10 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Spacer,
+  HStack,
+  useToast,
 } from "@chakra-ui/react";
+import NavBarComponent from "./NavBarComponent";
 
 const TOKEN =
   "pat9lbLhivluaYxIN.965db3fcbbbcf1e5958b1833c2c40004fe7711a6158ed9e80e8df58d3600d76d";
@@ -23,6 +25,7 @@ function InvoiceForm() {
   });
   const [error, setError] = useState("");
   const history = useHistory();
+  const toast = useToast();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -52,6 +55,13 @@ function InvoiceForm() {
       }
 
       const newEntry = await response.json();
+      toast({
+        title: `Invoice created`,
+        description: `Your invoice for ${invoice.client} has been created!`,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
       history.push(`/items/${newEntry.id}`);
     } catch (error) {
       console.error(error);
@@ -65,52 +75,50 @@ function InvoiceForm() {
 
   return (
     <div>
-      <Flex as="header" width="100%" p="4" bg="gray.100" align="center">
-        <Box>
-          <h1>Create Invoice</h1>
-        </Box>
-        <Spacer />
-        <Box>
-          <Button colorScheme="blue" onClick={handleBackToHome}>
-            Home
-          </Button>
-        </Box>
-      </Flex>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <NavBarComponent
+        title="Create Invoice"
+        buttonText="Save Invoice"
+        buttonFunction={createInvoice}
+      />
       <Box p="4">
-        <FormControl id="invoiceNumber" mb="4">
-          <FormLabel>Invoice Number</FormLabel>
-          <Input
-            type="text"
-            name="invoiceNumber"
-            placeholder="Invoice Number"
-            value={invoice.invoiceNumber}
-            onChange={handleInputChange}
-          />
-        </FormControl>
-        <FormControl id="client" mb="4">
-          <FormLabel>Client</FormLabel>
-          <Input
-            type="text"
-            name="client"
-            placeholder="Client"
-            value={invoice.client}
-            onChange={handleInputChange}
-          />
-        </FormControl>
-        <FormControl id="project" mb="4">
-          <FormLabel>Project</FormLabel>
-          <Input
-            type="text"
-            name="project"
-            placeholder="Project"
-            value={invoice.project}
-            onChange={handleInputChange}
-          />
-        </FormControl>
-        <Button colorScheme="blue" onClick={createInvoice}>
-          Save
-        </Button>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        <HStack spacing={4} width="100%">
+          <FormControl id="invoiceNumber">
+            <FormLabel>Invoice Number</FormLabel>
+            <Input
+              type="text"
+              name="invoiceNumber"
+              placeholder="Invoice Number"
+              value={invoice.invoiceNumber}
+              onChange={handleInputChange}
+            />
+          </FormControl>
+          <FormControl id="client">
+            <FormLabel>Client</FormLabel>
+            <Input
+              type="text"
+              name="client"
+              placeholder="Client"
+              value={invoice.client}
+              onChange={handleInputChange}
+            />
+          </FormControl>
+          <FormControl id="project">
+            <FormLabel>Project</FormLabel>
+            <Input
+              type="text"
+              name="project"
+              placeholder="Project"
+              value={invoice.project}
+              onChange={handleInputChange}
+            />
+          </FormControl>
+        </HStack>
+        <Flex mt="4" justify="center">
+          <Button colorScheme="red" onClick={handleBackToHome}>
+            Cancel
+          </Button>
+        </Flex>
       </Box>
     </div>
   );
