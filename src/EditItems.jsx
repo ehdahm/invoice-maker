@@ -14,22 +14,65 @@ import {
   NumberDecrementStepper,
   useToast,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import NavBarComponent from "./NavBarComponent";
 
 const TOKEN =
   "pat9lbLhivluaYxIN.965db3fcbbbcf1e5958b1833c2c40004fe7711a6158ed9e80e8df58d3600d76d";
-const BASE_URL = "https://api.airtable.com/v0/app44cnuWXzKrLX6k/items";
+const INVOICE_URL = `https://api.airtable.com/v0/app44cnuWXzKrLX6k/Invoices`;
+const ITEMS_URL = "https://api.airtable.com/v0/app44cnuWXzKrLX6k/items";
 
-function InvoiceItems() {
+function EditItems() {
   const { invoiceId } = useParams();
-  const [items, setItems] = useState([
-    { itemName: "", description: "", quantity: 1, price: 0 },
-  ]);
+  const [items, setItems] = useState([]);
   const [error, setError] = useState("");
   const history = useHistory();
   const toast = useToast();
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        // Fetch the invoice to get the linked item IDs
+        const invoiceResponse = await fetch(`${INVOICE_URL}/${invoiceId}`, {
+          headers: {
+            Authorization: `Bearer ${TOKEN}`,
+          },
+        });
+        const invoiceData = await invoiceResponse.json();
+        const itemIds = invoiceData.fields.items;
+
+        // Fetch the linked items
+        const itemResponses = await Promise.all(
+          itemIds.map((itemId) =>
+            fetch(`${ITEMS_URL}/${itemId}`, {
+              headers: {
+                Authorization: `Bearer ${TOKEN}`,
+              },
+            })
+          )
+        );
+        const itemData = await Promise.all(
+          itemResponses.map((res) => res.json())
+        );
+
+        setItems(
+          itemData.map((record) => ({
+            id: record.id,
+            itemName: record.fields["Item Name"],
+            description: record.fields.Description,
+            quantity: record.fields.Quantity,
+            price: parseFloat(record.fields.Price),
+          }))
+        );
+      } catch (error) {
+        console.error(error);
+        setError(`Failed to fetch items: ${error.message}`);
+      }
+    };
+
+    fetchItems();
+  }, [invoiceId]);
 
   const handleItemChange = (index, e) => {
     const { name, value } = e.target;
@@ -38,23 +81,17 @@ function InvoiceItems() {
     setItems(newItems);
   };
 
-  const addItem = () => {
-    setItems([
-      ...items,
-      { itemName: "", description: "", quantity: 1, price: 0 },
-    ]);
-  };
-
-  const removeItem = (index) => {
-    const newItems = items.filter((_, i) => i !== index);
+  const handleQuantityChange = (index, valueString) => {
+    const newItems = [...items];
+    newItems[index].quantity = parseInt(valueString, 10);
     setItems(newItems);
   };
 
-  const saveInvoice = async () => {
+  const saveItems = async () => {
     try {
       for (const item of items) {
-        const response = await fetch(BASE_URL, {
-          method: "POST",
+        const response = await fetch(`${ITEMS_URL}/${item.id}`, {
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${TOKEN}`,
@@ -63,9 +100,8 @@ function InvoiceItems() {
             fields: {
               "Item Name": item.itemName,
               Description: item.description,
-              Quantity: parseInt(item.quantity, 10),
-              Price: parseFloat(item.price),
-              Invoice: [invoiceId], // Link to the created invoice
+              Quantity: item.quantity,
+              Price: item.price,
             },
           }),
         });
@@ -76,7 +112,7 @@ function InvoiceItems() {
         }
       }
       toast({
-        title: `New invoice created`,
+        title: `Items updated successfully`,
         status: "success",
         duration: 5000,
         isClosable: true,
@@ -91,9 +127,9 @@ function InvoiceItems() {
   return (
     <div>
       <NavBarComponent
-        title="Add Items"
-        buttonText="Save Invoice"
-        buttonFunction={saveInvoice}
+        title="Edit Items"
+        buttonText="Save Changes"
+        buttonFunction={saveItems}
         buttonColor="green"
       />
       <Box p="4">
@@ -125,14 +161,14 @@ function InvoiceItems() {
 
               <FormControl id={`quantity-${index}`}>
                 <FormLabel>Quantity</FormLabel>
-                <NumberInput min={0}>
-                  <NumberInputField
-                    type="number"
-                    name="quantity"
-                    placeholder="Quantity"
-                    value={item.quantity}
-                    onChange={(e) => handleItemChange(index, e)}
-                  />
+                <NumberInput
+                  min={0}
+                  value={item.quantity}
+                  onChange={(valueString) =>
+                    handleQuantityChange(index, valueString)
+                  }
+                >
+                  <NumberInputField name="quantity" placeholder="Quantity" />
                   <NumberInputStepper>
                     <NumberIncrementStepper />
                     <NumberDecrementStepper />
@@ -150,20 +186,12 @@ function InvoiceItems() {
                   onChange={(e) => handleItemChange(index, e)}
                 />
               </FormControl>
-              <FormControl pt="8" id="remove-item">
-                <Button onClick={() => removeItem(index)}>Remove Item</Button>
-              </FormControl>
             </HStack>
           ))}
         </VStack>
-        <Flex mt="4" justify="center">
-          <Button colorScheme="blue" onClick={addItem} mr="4">
-            Add Item
-          </Button>
-        </Flex>
       </Box>
     </div>
   );
 }
 
-export default InvoiceItems;
+export default EditItems;

@@ -1,4 +1,4 @@
-import { Button, Flex, Box, Spacer } from "@chakra-ui/react";
+import { Button, Flex, Box, Spacer, useToast } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom/cjs/react-router-dom";
 import {
@@ -17,8 +17,9 @@ function InvoicesPage() {
   const [invoices, setInvoices] = useState([]);
   const TOKEN =
     "pat9lbLhivluaYxIN.965db3fcbbbcf1e5958b1833c2c40004fe7711a6158ed9e80e8df58d3600d76d";
-  const BASE_URL = "https://api.airtable.com/v0/app44cnuWXzKrLX6k/Invoices";
+  const BASE_URL = "https://api.airtable.com/v0/app44cnuWXzKrLX6k/invoices";
   const history = useHistory();
+  const toast = useToast();
 
   useEffect(() => {
     async function fetchInvoices() {
@@ -46,6 +47,30 @@ function InvoicesPage() {
     history.push("/new-invoice");
   };
 
+  const handleEdit = (id) => {
+    history.push(`/edit-invoice/${id}`);
+  };
+
+  const handleDelete = async (id) => {
+    const response = await fetch(`${BASE_URL}/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${TOKEN}`,
+      },
+    });
+    if (response.ok) {
+      setInvoices(invoices.filter((invoice) => invoice.id !== id));
+      toast({
+        title: `Invoice deleted`,
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+    } else {
+      console.error("Failed to delete invoice");
+    }
+  };
+
   return (
     <>
       <NavBarComponent
@@ -63,6 +88,7 @@ function InvoicesPage() {
               <Th>Client</Th>
               <Th>Project</Th>
               <Th>Created</Th>
+              <Th>Actions</Th>
             </Tr>
           </Thead>
           <Tbody>
@@ -73,6 +99,23 @@ function InvoicesPage() {
                 <Td>{invoice.client}</Td>
                 <Td>{invoice.project}</Td>
                 <Td>{invoice.created}</Td>
+                <Td>
+                  <Flex>
+                    <Button
+                      mr="4"
+                      colorScheme="blue"
+                      onClick={() => handleEdit(invoice.id)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      colorScheme="red"
+                      onClick={() => handleDelete(invoice.id)}
+                    >
+                      Delete
+                    </Button>
+                  </Flex>
+                </Td>
               </Tr>
             ))}
           </Tbody>
