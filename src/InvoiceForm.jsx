@@ -8,7 +8,6 @@ import {
   FormLabel,
   Input,
   HStack,
-  useToast,
 } from "@chakra-ui/react";
 import NavBarComponent from "./NavBarComponent";
 
@@ -25,8 +24,6 @@ function InvoiceForm() {
   });
   const [error, setError] = useState("");
   const history = useHistory();
-  const toast = useToast();
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setInvoice({ ...invoice, [name]: value });
@@ -45,6 +42,7 @@ function InvoiceForm() {
             "Invoice #": parseInt(invoice.invoiceNumber, 10),
             Client: invoice.client,
             Project: invoice.project,
+            Company: "hyhu",
           },
         }),
       });
@@ -55,13 +53,6 @@ function InvoiceForm() {
       }
 
       const newEntry = await response.json();
-      toast({
-        title: `Invoice created`,
-        description: `Your invoice for ${invoice.client} has been created!`,
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
       history.push(`/items/${newEntry.id}`);
     } catch (error) {
       console.error(error);
@@ -77,8 +68,9 @@ function InvoiceForm() {
     <div>
       <NavBarComponent
         title="Create Invoice"
-        buttonText="Save Invoice"
+        buttonText="Add Items"
         buttonFunction={createInvoice}
+        buttonColor="green"
       />
       <Box p="4">
         {error && <p style={{ color: "red" }}>{error}</p>}

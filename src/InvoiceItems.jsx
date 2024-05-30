@@ -12,6 +12,7 @@ import {
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
+  useToast,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
@@ -28,6 +29,7 @@ function InvoiceItems() {
   ]);
   const [error, setError] = useState("");
   const history = useHistory();
+  const toast = useToast();
 
   const handleItemChange = (index, e) => {
     const { name, value } = e.target;
@@ -73,7 +75,12 @@ function InvoiceItems() {
           throw new Error(errorResponse.error.message);
         }
       }
-
+      toast({
+        title: `New invoice created`,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
       history.push("/");
     } catch (error) {
       console.error(error);
