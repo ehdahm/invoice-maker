@@ -17,13 +17,14 @@ function InvoicesPage() {
   const [invoices, setInvoices] = useState([]);
   const TOKEN =
     "pat9lbLhivluaYxIN.965db3fcbbbcf1e5958b1833c2c40004fe7711a6158ed9e80e8df58d3600d76d";
-  const BASE_URL = "https://api.airtable.com/v0/app44cnuWXzKrLX6k/invoices";
+  const INVOICE_URL = "https://api.airtable.com/v0/app44cnuWXzKrLX6k/invoices";
+  const ITEMS_URL = "https://api.airtable.com/v0/app44cnuWXzKrLX6k/items";
   const history = useHistory();
   const toast = useToast();
 
   useEffect(() => {
     async function fetchInvoices() {
-      const response = await fetch(BASE_URL, {
+      const response = await fetch(INVOICE_URL, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${TOKEN}`,
@@ -51,23 +52,70 @@ function InvoicesPage() {
     history.push(`/edit-invoice/${id}`);
   };
 
-  const handleDelete = async (id) => {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${TOKEN}`,
-      },
-    });
-    if (response.ok) {
-      setInvoices(invoices.filter((invoice) => invoice.id !== id));
+  const handleDelete = async (invoiceId) => {
+    try {
+      const invoiceResponse = await fetch(`${INVOICE_URL}/${invoiceId}`, {
+        headers: {
+          Authorization: `Bearer ${TOKEN}`,
+        },
+      });
+
+      if (!invoiceResponse.ok) {
+        throw new Error("Failed to fetch invoice");
+      }
+
+      const invoiceData = await invoiceResponse.json();
+      // get linked item ids.
+      const itemIds = invoiceData.fields.items;
+
+      // Delete all linked items.
+      const deleteItemResponses = await Promise.all(
+        itemIds.map((itemId) =>
+          fetch(`${ITEMS_URL}/${itemId}`, {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${TOKEN}`,
+            },
+          })
+        )
+      );
+
+      // Check for all deletetions
+      deleteItemResponses.forEach((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to delete item");
+        }
+      });
+
+      // Delete invoice
+      const deleteInvoiceResponse = await fetch(`${INVOICE_URL}/${invoiceId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${TOKEN}`,
+        },
+      });
+
+      if (deleteInvoiceResponse.ok) {
+        setInvoices((prevInvoices) =>
+          prevInvoices.filter((invoice) => invoice.id !== invoiceId)
+        );
+        toast({
+          title: `Invoice deleted`,
+          status: "info",
+          duration: 5000,
+          isClosable: true,
+        });
+      } else {
+        throw new Error("Failed to delete invoice");
+      }
+    } catch (error) {
+      console.error(error.message);
       toast({
-        title: `Invoice deleted`,
-        status: "info",
+        title: `Failed to delete invoice and items`,
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
-    } else {
-      console.error("Failed to delete invoice");
     }
   };
 
