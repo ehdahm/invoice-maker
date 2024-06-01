@@ -8,11 +8,11 @@ Invoice Manager is a user-friendly web application designed to help small busine
 
 ### Landing Page
 
-![Landing Page](path/to/landing-page-screenshot.png)
+Add screenshot here
 
 ### Invoice Detail Page
 
-![Invoice Detail Page](path/to/invoice-detail-page-screenshot.png)
+Add screenshot here
 
 ## Technologies Used
 
