@@ -71,8 +71,12 @@ function InvoicesPage() {
     }
   };
 
+  const handleView = (id) => {
+    history.push(`/view-invoice/${id}`);
+  };
+
   return (
-    <>
+    <Box p={5} maxWidth="80vw" mx="auto">
       <NavBarComponent
         title="Invoices"
         buttonText="Create New Invoice"
@@ -95,7 +99,9 @@ function InvoicesPage() {
             {invoices.map((invoice) => (
               <Tr key={invoice.id}>
                 <Td>{invoice.invoiceNumber}</Td>
-                <Td isNumeric>SGD {invoice.amount}</Td>
+                <Td isNumer ic>
+                  SGD {invoice.amount}
+                </Td>
                 <Td>{invoice.client}</Td>
                 <Td>{invoice.project}</Td>
                 <Td>{invoice.created}</Td>
@@ -109,10 +115,17 @@ function InvoicesPage() {
                       Edit
                     </Button>
                     <Button
+                      mr="4"
                       colorScheme="red"
                       onClick={() => handleDelete(invoice.id)}
                     >
                       Delete
+                    </Button>
+                    <Button
+                      colorScheme="teal"
+                      onClick={() => handleView(invoice.id)}
+                    >
+                      View
                     </Button>
                   </Flex>
                 </Td>
@@ -121,7 +134,7 @@ function InvoicesPage() {
           </Tbody>
         </Table>
       </TableContainer>
-    </>
+    </Box>
   );
 }
 
