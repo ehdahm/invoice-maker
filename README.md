@@ -8,11 +8,13 @@ Invoice Manager is a user-friendly web application designed to help small busine
 
 ### Landing Page
 
-Add screenshot here
+![image](https://github.com/ehdahm/invoice-maker/assets/45594732/ec2ab029-a434-4db5-8cd4-89cea1ffb670)
+
 
 ### Invoice Detail Page
 
-Add screenshot here
+![image](https://github.com/ehdahm/invoice-maker/assets/45594732/18b7fcde-e3ab-412a-a781-d8dd41299bcc)
+
 
 ## Technologies Used
 
@@ -30,6 +32,10 @@ Add screenshot here
 add screenshot here
 
 ### Wireframes
+
+![image](https://github.com/ehdahm/invoice-maker/assets/45594732/df5c38e7-78a8-46cf-a5a3-74a1b6ce2f2a)
+
+![image](https://github.com/ehdahm/invoice-maker/assets/45594732/086ad546-9a91-44d7-9112-eb074732e44f)
 
 ## Challenges Faced
 
