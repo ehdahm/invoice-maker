@@ -27,7 +27,7 @@ Add screenshot here
 
 ### Deployed App
 
-[Click here to access the deployed app](https://your-deployed-app-url.com)
+add screenshot here
 
 ### Wireframes
 
