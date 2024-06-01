@@ -125,7 +125,7 @@ function EditItems() {
   };
 
   return (
-    <div>
+    <Box p={5} maxWidth="80vw" mx="auto">
       <NavBarComponent
         title="Edit Items"
         buttonText="Save Changes"
@@ -190,7 +190,7 @@ function EditItems() {
           ))}
         </VStack>
       </Box>
-    </div>
+    </Box>
   );
 }
 

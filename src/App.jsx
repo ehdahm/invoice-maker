@@ -3,6 +3,7 @@ import { Route, Switch } from "react-router-dom";
 import InvoiceForm from "./InvoiceForm";
 import InvoiceItems from "./InvoiceItems";
 import InvoicesPage from "./InvoicesPage";
+import InvoiceDetail from "./InvoiceDetail";
 import EditInvoice from "./EditInvoice";
 import EditItems from "./EditItems";
 
@@ -22,6 +23,12 @@ function App() {
         <EditItems />
       </Route>
       <Route path="/" exact>
+        <InvoicesPage />
+      </Route>
+      <Route path="/view-invoice/:id" exact>
+        <InvoiceDetail />
+      </Route>
+      <Route path="/home" exact>
         <InvoicesPage />
       </Route>
     </Switch>

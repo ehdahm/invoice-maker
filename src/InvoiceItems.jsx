@@ -89,7 +89,7 @@ function InvoiceItems() {
   };
 
   return (
-    <div>
+    <Box p={5} maxWidth="80vw" mx="auto">
       <NavBarComponent
         title="Add Items"
         buttonText="Save Invoice"
@@ -162,7 +162,7 @@ function InvoiceItems() {
           </Button>
         </Flex>
       </Box>
-    </div>
+    </Box>
   );
 }
 

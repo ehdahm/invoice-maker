@@ -90,7 +90,7 @@ function EditInvoice() {
   }
 
   return (
-    <div>
+    <Box p={5} maxWidth="80vw" mx="auto">
       <NavBarComponent
         title="Edit Invoice"
         buttonFunction={saveInvoice}
@@ -134,7 +134,7 @@ function EditInvoice() {
           </Button>
         </Flex>
       </Box>
-    </div>
+    </Box>
   );
 }
 
