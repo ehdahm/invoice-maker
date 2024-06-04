@@ -29,6 +29,35 @@ function InvoiceForm() {
     setInvoice({ ...invoice, [name]: value });
   };
 
+  const handlePostalCodeChange = async (e) => {
+    const postalCode = e.target.value;
+    setInvoice({ ...invoice, postalCode });
+    if (postalCode.length === 6) {
+      await fetchAddress(postalCode);
+    }
+  };
+
+  const fetchAddress = async (postalCode) => {
+    const url = `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${encodeURIComponent(
+      postalCode
+    )}&returnGeom=Y&getAddrDetails=Y&pageNum=1`;
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.results && data.results.length > 0) {
+        const result = data.results[0];
+        setInvoice((prevInvoice) => ({
+          ...prevInvoice,
+          address: result.ADDRESS,
+        }));
+      } else {
+        setError("Address not found.");
+      }
+    } catch (error) {
+      setError("Failed to fetch address.");
+    }
+  };
+
   const createInvoice = async () => {
     try {
       const response = await fetch(BASE_URL, {
@@ -43,6 +72,8 @@ function InvoiceForm() {
             Client: invoice.client,
             Project: invoice.project,
             Company: "hyhu",
+            "Postal Code": parseInt(invoice.postalCode),
+            Address: invoice.address,
           },
         }),
       });
@@ -103,6 +134,26 @@ function InvoiceForm() {
               placeholder="Project"
               value={invoice.project}
               onChange={handleInputChange}
+            />
+          </FormControl>
+          <FormControl id="postalCode">
+            <FormLabel>Postal Code</FormLabel>
+            <Input
+              type="text"
+              name="postalCode"
+              placeholder="Postal Code"
+              value={invoice.postalCode}
+              onChange={handlePostalCodeChange}
+            />
+          </FormControl>
+          <FormControl id="address">
+            <FormLabel>Full Address</FormLabel>
+            <Input
+              type="text"
+              name="address"
+              placeholder="Address"
+              value={invoice.address}
+              readOnly
             />
           </FormControl>
         </HStack>
