@@ -11,6 +11,7 @@ import {
   Th,
   Td,
   Container,
+  Spinner,
 } from "@chakra-ui/react";
 import { useParams, useHistory } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -55,7 +56,12 @@ function InvoiceDetail() {
     fetchInvoice();
   }, [id]);
 
-  if (!invoice) return <div>Loading...</div>;
+  if (!invoice)
+    return (
+      <Flex align="top" justify="center" height="100vh" mt={20}>
+        <Spinner size="xl" />
+      </Flex>
+    );
 
   return (
     <Box p={5} maxWidth="800px" mx="auto">

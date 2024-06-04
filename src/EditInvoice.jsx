@@ -13,6 +13,7 @@ import {
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
+  useToast,
 } from "@chakra-ui/react";
 import NavBarComponent from "./NavBarComponent";
 
@@ -24,7 +25,9 @@ function EditInvoice() {
   const { id } = useParams();
   const [invoice, setInvoice] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
   const history = useHistory();
+  const toast = useToast();
 
   useEffect(() => {
     async function fetchInvoice() {
@@ -43,12 +46,14 @@ function EditInvoice() {
           project: jsonData.fields["Project"],
           amount: jsonData.fields["Amount Rollup (from items)"],
           created: jsonData.fields["Created"],
-          items: jsonData.fields["items"], // Capture linked item IDs
+          postalCode: jsonData.fields["Postal Code"],
+          address: jsonData.fields["Address"],
+          items: jsonData.fields["items"],
         });
         setIsLoading(false);
       } catch (error) {
         console.error("Failed to fetch invoice", error);
-        setIsLoading(false); // Ensure loading state is turned off on error
+        setIsLoading(false);
       }
     }
     fetchInvoice();
@@ -58,34 +63,91 @@ function EditInvoice() {
     history.goBack();
   }
 
-  const saveInvoice = async () => {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${TOKEN}`,
-      },
-      body: JSON.stringify({
-        fields: {
-          "Invoice #": parseInt(invoice.invoiceNumber, 10),
-          Client: invoice.client,
-          Project: invoice.project,
-        },
-      }),
-    });
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setInvoice((prevInvoice) => ({ ...prevInvoice, [name]: value }));
+  };
 
-    if (response.ok) {
-      history.push(`/edit-items/${id}`); // Navigate to edit-items page with invoice ID
-    } else {
-      console.error("Failed to save invoice");
+  const handlePostalCodeChange = async (e) => {
+    const postalCode = e.target.value;
+    setInvoice((prevInvoice) => ({ ...prevInvoice, postalCode }));
+    if (postalCode.length === 6) {
+      await fetchAddress(postalCode);
+    }
+  };
+
+  const fetchAddress = async (postalCode) => {
+    const url = `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${encodeURIComponent(
+      postalCode
+    )}&returnGeom=Y&getAddrDetails=Y&pageNum=1`;
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Failed to fetch address data");
+      }
+      const data = await response.json();
+      if (data.results && data.results.length > 0) {
+        const result = data.results[0];
+        setInvoice((prevInvoice) => ({
+          ...prevInvoice,
+          address: result.ADDRESS,
+        }));
+      } else {
+        setError("Address not found.");
+      }
+    } catch (error) {
+      setError("Failed to fetch address.");
+    }
+  };
+
+  const saveInvoice = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${TOKEN}`,
+        },
+        body: JSON.stringify({
+          fields: {
+            "Invoice #": parseInt(invoice.invoiceNumber, 10),
+            Client: invoice.client,
+            Project: invoice.project,
+            "Postal Code": parseInt(invoice.postalCode),
+            Address: invoice.address,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save invoice");
+      }
+      history.push(`/edit-items/${id}`);
+    } catch (error) {
+      console.error("Failed to save invoice", error);
+      setError("Failed to save invoice.");
+      toast({
+        title: "Error",
+        description: "Failed to save invoice.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
   if (isLoading) {
     return (
-      <Flex align="center" justify="center" height="100vh">
-        <Spinner size="xl" />
-      </Flex>
+      <Box p={5} maxWidth="80vw" mx="auto">
+        <NavBarComponent
+          title="Edit Invoice"
+          buttonFunction={saveInvoice}
+          buttonText="Edit Items"
+        />
+        <Flex align="top" justify="center" height="100vh" mt={10}>
+          <Spinner size="xl" />
+        </Flex>
+      </Box>
     );
   }
 
@@ -97,6 +159,7 @@ function EditInvoice() {
         buttonText="Edit Items"
       />
       <Box p={4}>
+        {error && <p style={{ color: "red" }}>{error}</p>}
         <FormControl>
           <FormLabel>Invoice Number</FormLabel>
           <NumberInput
@@ -116,17 +179,29 @@ function EditInvoice() {
           <FormLabel>Client</FormLabel>
           <Input
             value={invoice.client}
-            onChange={(e) => setInvoice({ ...invoice, client: e.target.value })}
+            name="client"
+            onChange={handleInputChange}
           />
         </FormControl>
         <FormControl mt={4}>
           <FormLabel>Project</FormLabel>
           <Input
             value={invoice.project}
-            onChange={(e) =>
-              setInvoice({ ...invoice, project: e.target.value })
-            }
+            name="project"
+            onChange={handleInputChange}
           />
+        </FormControl>
+        <FormControl mt={4}>
+          <FormLabel>Postal Code</FormLabel>
+          <Input
+            value={invoice.postalCode}
+            name="postalCode"
+            onChange={handlePostalCodeChange}
+          />
+        </FormControl>
+        <FormControl mt={4}>
+          <FormLabel>Address</FormLabel>
+          <Input value={invoice.address} name="address" readOnly />
         </FormControl>
         <Flex justify="center">
           <Button mt={4} colorScheme="red" onClick={goBack}>
