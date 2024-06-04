@@ -48,12 +48,12 @@ function EditInvoice() {
           created: jsonData.fields["Created"],
           postalCode: jsonData.fields["Postal Code"],
           address: jsonData.fields["Address"],
-          items: jsonData.fields["items"], // Capture linked item IDs
+          items: jsonData.fields["items"],
         });
         setIsLoading(false);
       } catch (error) {
         console.error("Failed to fetch invoice", error);
-        setIsLoading(false); // Ensure loading state is turned off on error
+        setIsLoading(false);
       }
     }
     fetchInvoice();
@@ -123,13 +123,6 @@ function EditInvoice() {
         throw new Error("Failed to save invoice");
       }
       history.push(`/edit-items/${id}`);
-      toast({
-        title: "Invoice saved.",
-        description: "The invoice details have been saved successfully.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
     } catch (error) {
       console.error("Failed to save invoice", error);
       setError("Failed to save invoice.");
@@ -145,9 +138,16 @@ function EditInvoice() {
 
   if (isLoading) {
     return (
-      <Flex align="center" justify="center" height="100vh">
-        <Spinner size="xl" />
-      </Flex>
+      <Box p={5} maxWidth="80vw" mx="auto">
+        <NavBarComponent
+          title="Edit Invoice"
+          buttonFunction={saveInvoice}
+          buttonText="Edit Items"
+        />
+        <Flex align="top" justify="center" height="100vh" mt={10}>
+          <Spinner size="xl" />
+        </Flex>
+      </Box>
     );
   }
 

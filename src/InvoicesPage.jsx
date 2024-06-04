@@ -1,4 +1,4 @@
-import { Button, Flex, Box, Spacer, useToast } from "@chakra-ui/react";
+import { Button, Flex, Box, useToast } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom/cjs/react-router-dom";
 import {
@@ -10,11 +10,13 @@ import {
   Td,
   TableCaption,
   TableContainer,
+  Spinner,
 } from "@chakra-ui/react";
 import NavBarComponent from "./NavBarComponent";
 
 function InvoicesPage() {
   const [invoices, setInvoices] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const TOKEN =
     "pat9lbLhivluaYxIN.965db3fcbbbcf1e5958b1833c2c40004fe7711a6158ed9e80e8df58d3600d76d";
   const BASE_URL = "https://api.airtable.com/v0/app44cnuWXzKrLX6k/invoices";
@@ -38,6 +40,7 @@ function InvoicesPage() {
         amount: data.fields["Amount Rollup (from items)"],
         created: data.fields["Created"],
       }));
+      setIsLoading(false);
       setInvoices(invoicesData);
     }
     fetchInvoices();
@@ -74,6 +77,20 @@ function InvoicesPage() {
   const handleView = (id) => {
     history.push(`/view-invoice/${id}`);
   };
+  if (isLoading) {
+    return (
+      <Box p={5} maxWidth="80vw" mx="auto">
+        <NavBarComponent
+          title="Invoices"
+          buttonText="Create New Invoice"
+          buttonFunction={handleCreateNewInvoice}
+        />
+        <Flex align="top" justify="center" height="100vh" mt={10}>
+          <Spinner size="xl" />
+        </Flex>
+      </Box>
+    );
+  }
 
   return (
     <Box p={5} maxWidth="80vw" mx="auto">

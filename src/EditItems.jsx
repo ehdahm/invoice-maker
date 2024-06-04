@@ -13,6 +13,7 @@ import {
   NumberIncrementStepper,
   NumberDecrementStepper,
   useToast,
+  Spinner,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { useParams, useHistory } from "react-router-dom";
@@ -27,6 +28,7 @@ function EditItems() {
   const { invoiceId } = useParams();
   const [items, setItems] = useState([]);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const history = useHistory();
   const toast = useToast();
 
@@ -65,9 +67,11 @@ function EditItems() {
             price: parseFloat(record.fields.Price),
           }))
         );
+        setIsLoading(false);
       } catch (error) {
         console.error(error);
         setError(`Failed to fetch items: ${error.message}`);
+        setIsLoading(false);
       }
     };
 
@@ -112,7 +116,7 @@ function EditItems() {
         }
       }
       toast({
-        title: `Items updated successfully`,
+        title: `Successfully edited invoice details`,
         status: "success",
         duration: 5000,
         isClosable: true,
@@ -123,6 +127,22 @@ function EditItems() {
       setError(`Failed to save items: ${error.message}`);
     }
   };
+
+  if (isLoading) {
+    return (
+      <Box p={5} maxWidth="80vw" mx="auto">
+        <NavBarComponent
+          title="Edit Items"
+          buttonText="Save Changes"
+          buttonFunction={saveItems}
+          buttonColor="green"
+        />
+        <Flex align="top" justify="center" height="100vh" mt={10}>
+          <Spinner size="xl" />
+        </Flex>
+      </Box>
+    );
+  }
 
   return (
     <Box p={5} maxWidth="80vw" mx="auto">
