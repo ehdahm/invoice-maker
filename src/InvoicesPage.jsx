@@ -1,5 +1,18 @@
-import { Button, Flex, Box, useToast } from "@chakra-ui/react";
-import { useState, useEffect } from "react";
+import {
+  Button,
+  Flex,
+  Box,
+  useToast,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  AlertDialogCloseButton,
+  useDisclosure,
+} from "@chakra-ui/react";
+import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom/cjs/react-router-dom";
 import {
   Table,
@@ -17,6 +30,8 @@ import NavBarComponent from "./NavBarComponent";
 function InvoicesPage() {
   const [invoices, setInvoices] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = React.useRef();
   const TOKEN =
     "pat9lbLhivluaYxIN.965db3fcbbbcf1e5958b1833c2c40004fe7711a6158ed9e80e8df58d3600d76d";
   const BASE_URL = "https://api.airtable.com/v0/app44cnuWXzKrLX6k/invoices";
@@ -116,9 +131,7 @@ function InvoicesPage() {
             {invoices.map((invoice) => (
               <Tr key={invoice.id}>
                 <Td>{invoice.invoiceNumber}</Td>
-                <Td isNumer ic>
-                  SGD {invoice.amount}
-                </Td>
+                <Td isNumeric>SGD {invoice.amount}</Td>
                 <Td>{invoice.client}</Td>
                 <Td>{invoice.project}</Td>
                 <Td>{invoice.created}</Td>
@@ -131,13 +144,42 @@ function InvoicesPage() {
                     >
                       Edit
                     </Button>
-                    <Button
-                      mr="4"
-                      colorScheme="red"
-                      onClick={() => handleDelete(invoice.id)}
-                    >
+                    <Button mr="4" colorScheme="red" onClick={onOpen}>
                       Delete
                     </Button>
+                    <AlertDialog
+                      isOpen={isOpen}
+                      leastDestructiveRef={cancelRef}
+                      onClose={onClose}
+                    >
+                      <AlertDialogOverlay>
+                        <AlertDialogContent>
+                          <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                            Delete Customer
+                          </AlertDialogHeader>
+
+                          <AlertDialogBody>
+                            Are you sure? You can't undo this action afterwards.
+                          </AlertDialogBody>
+
+                          <AlertDialogFooter>
+                            <Button ref={cancelRef} onClick={onClose}>
+                              Cancel
+                            </Button>
+                            <Button
+                              colorScheme="red"
+                              onClick={() => {
+                                onClose;
+                                handleDelete(invoice.id);
+                              }}
+                              ml={3}
+                            >
+                              Delete
+                            </Button>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialogOverlay>
+                    </AlertDialog>
                     <Button
                       colorScheme="teal"
                       onClick={() => handleView(invoice.id)}
